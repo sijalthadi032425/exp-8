@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory & Stock Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            padding: 20px;
+        }
+        h2 { color: #333; }
+        form, table {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 200px;
+        }
+        button {
+            padding: 8px 12px;
+            cursor: pointer;
+            background: #007bff;
+            border: none;
+            color: white;
+            border-radius: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table tr th, table tr td {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            text-align: center;
+        }
+        .delete-btn {
+            background: red;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Inventory & Stock Management System</h2>
+
+    <!-- Form to Add Product -->
+    <form id="productForm">
+        <input type="text" id="name" placeholder="Product Name" required>
+        <input type="number" id="quantity" placeholder="Quantity" required>
+        <input type="number" id="price" placeholder="Price" required>
+        <button type="submit">Add Product</button>
+    </form>
+
+    <!-- Product Table -->
+    <table>
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Quantity (Stock)</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="productTable">
+        </tbody>
+    </table>
+
+<script>
+    const API = "http://localhost:3000";
+
+    // Fetch and Display Products
+    async function loadProducts() {
+        const res = await fetch(`${API}/view`);
+        const data = await res.json();
+
+        const table = document.getElementById("productTable");
+        table.innerHTML = "";
+
+        data.forEach(item => {
+            table.innerHTML += `
+                <tr>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.price}</td>
+                    <td><button class="delete-btn" onclick="deleteProduct('${item._id}')">Delete</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    // Add Product
+    document.getElementById("productForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const product = {
+            name: document.getElementById("name").value,
+            quantity: document.getElementById("quantity").value,
+            price: document.getElementById("price").value
+        };
+
+        await fetch(`${API}/add`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(product)
+        });
+
+        alert("✅ Product Added Successfully");
+        loadProducts();
+        document.getElementById("productForm").reset();
+    });
+
+    // Delete Product
+    async function deleteProduct(id) {
+        await fetch(`${API}/delete/${id}`, { method: "DELETE" });
+        alert("❌ Product Deleted");
+        loadProducts();
+    }
+
+    // Load products on start
+    loadProducts();
+</script>
+
+</body>
+</html>
